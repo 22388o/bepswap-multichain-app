@@ -1,0 +1,1 @@
+export { WebFontLoader } from './WebFontLoader'
