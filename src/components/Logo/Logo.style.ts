@@ -11,3 +11,9 @@ export const LogoWrapper = styled.div`
     }
   }
 `
+
+export const BepswapIconWrapper = styled.div`
+  svg {
+    height: 26px;
+  }
+`

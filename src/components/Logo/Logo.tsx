@@ -2,7 +2,7 @@ import React from 'react'
 
 import { BepswapIcon, ThorChainIcon } from 'components/Icons'
 
-import { LogoWrapper } from './Logo.style'
+import { LogoWrapper, BepswapIconWrapper } from './Logo.style'
 
 export type Props = {
   type: 'thorchain' | 'bepswap'
@@ -13,7 +13,13 @@ export const Logo = (props: Props) => {
 
   return (
     <LogoWrapper>
-      {type === 'thorchain' ? <ThorChainIcon /> : <BepswapIcon />}
+      {type === 'thorchain' ? (
+        <ThorChainIcon />
+      ) : (
+        <BepswapIconWrapper>
+          <BepswapIcon />
+        </BepswapIconWrapper>
+      )}
     </LogoWrapper>
   )
 }
