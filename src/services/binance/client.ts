@@ -283,7 +283,7 @@ class Client implements BinanceClient, XChainClient {
    * @param {Asset} asset If not set, it will return all assets available. (optional)
    * @returns {Array<Balance>} The balance of the address.
    */
-  getBalance = async (address?: Address, asset?: Asset): Promise<Balances> => {
+  getBalance = async (address?: Address): Promise<Balances> => {
     try {
       const balances: BinanceBalances = await this.bncClient.getBalance(address || this.getAddress())
 
@@ -294,7 +294,6 @@ class Client implements BinanceClient, XChainClient {
             amount: assetToBase(assetAmount(balance.free, 8)),
           }
         })
-        .filter((balance) => !asset || assetToString(balance.asset) === assetToString(asset))
     } catch (error) {
       return Promise.reject(error)
     }

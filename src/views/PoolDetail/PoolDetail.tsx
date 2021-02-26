@@ -36,7 +36,7 @@ const PoolDetailView = ({ pool }: { pool: Pool }) => {
 
   return (
     <Styled.Container>
-      <Helmet title="" content="Multichain Asgardex web app" />
+      <Helmet title="" content="BEPSwap Multichain web app" />
       <Styled.Header>
         <Styled.PoolInfo>
           <AssetData asset={pool.asset} />

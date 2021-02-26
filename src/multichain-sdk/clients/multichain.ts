@@ -1,7 +1,22 @@
 import { crypto } from '@binance-chain/javascript-sdk'
 import { KeyStore } from '@binance-chain/javascript-sdk/lib/crypto'
-import { TxHash, Network } from '@xchainjs/xchain-client'
-import { Chain } from '@xchainjs/xchain-util'
+import {
+  TxHash,
+  Network,
+  Fees,
+  TxsPage,
+  TxHistoryParams,
+  Tx,
+} from '@xchainjs/xchain-client'
+import {
+  Chain,
+  BTCChain,
+  BNBChain,
+  THORChain,
+  ETHChain,
+  LTCChain,
+  // BCHChain,
+} from '@xchainjs/xchain-util'
 import {
   MidgardV2,
   NetworkType as MidgardNetwork,
@@ -10,6 +25,11 @@ import {
 
 import { Swap, Memo, Asset, AssetAmount } from '../entities'
 import { BnbChain } from './binance'
+import { BtcChain } from './bitcoin'
+// import { BchChain } from './bitcoinCash'
+import { EthChain } from './ethereum'
+import { LtcChain } from './litecoin'
+import { ThorChain } from './thorchain'
 import {
   TxParams,
   AddLiquidityParams,
@@ -28,13 +48,26 @@ export interface IMultiChain {
 
   wallets: Wallet | null
 
+  thor: ThorChain
+  btc: BtcChain
   bnb: BnbChain
+  eth: EthChain
+  ltc: LtcChain
 
   validateKeystore(keystore: KeyStore, password: string, addr: string): boolean
 
   getMidgard(): MidgardV2
   getPoolAddressByChain(chain: Chain): Promise<PoolAddress>
   loadWallet(): Promise<Wallet | null>
+
+  getExplorerUrl(chain: Chain): string
+  getExplorerAddressUrl(chain: Chain, address: string): string
+  getExplorerTxUrl(chain: Chain, txHash: string): string
+
+  getTransactions(params?: TxHistoryParams): Promise<TxsPage>
+  getTransactionData(txHash: string): Promise<Tx>
+
+  getFees(): Promise<Fees>
 
   transfer(tx: TxParams, native?: boolean): Promise<TxHash>
   swap(swap: Swap, recipient?: string): Promise<TxHash>
@@ -53,7 +86,17 @@ export class MultiChain implements IMultiChain {
 
   public readonly network: Network
 
+  public thor: ThorChain
+
+  public btc: BtcChain
+
   public bnb: BnbChain
+
+  public eth: EthChain
+
+  // public bch: BchChain
+
+  public ltc: LtcChain
 
   constructor({
     network = 'testnet',
@@ -69,7 +112,11 @@ export class MultiChain implements IMultiChain {
     this.midgard = new MidgardV2(MultiChain.getMidgardNetwork(network))
 
     // create chain clients
+    this.thor = new ThorChain({ network, phrase })
     this.bnb = new BnbChain({ network, phrase })
+    this.btc = new BtcChain({ network, phrase })
+    this.eth = new EthChain({ network, phrase })
+    this.ltc = new LtcChain({ network, phrase })
   }
 
   setPrivateKey = (privateKey: string) => {
@@ -165,6 +212,50 @@ export class MultiChain implements IMultiChain {
     } catch (error) {
       return Promise.reject(error)
     }
+  }
+
+  getChainClient = (chain: Chain) => {
+    if (chain === THORChain) return this.thor
+    if (chain === BNBChain) return this.bnb
+    if (chain === BTCChain) return this.btc
+    if (chain === ETHChain) return this.eth
+    if (chain === LTCChain) return this.ltc
+    // if (chain === BCHChain) return this.bch
+
+    return null
+  }
+
+  getExplorerUrl = (chain: Chain): string => {
+    const chainClient = this.getChainClient(chain)
+    if (!chainClient) throw new Error('invalid chain')
+
+    return chainClient.getClient().getExplorerUrl()
+  }
+
+  getExplorerAddressUrl = (chain: Chain, address: string): string => {
+    const chainClient = this.getChainClient(chain)
+    if (!chainClient) throw new Error('invalid chain')
+
+    return chainClient.getClient().getExplorerAddressUrl(address)
+  }
+
+  getExplorerTxUrl = (chain: Chain, txHash: string): string => {
+    const chainClient = this.getChainClient(chain)
+    if (!chainClient) throw new Error('invalid chain')
+
+    return chainClient.getClient().getExplorerTxUrl(txHash)
+  }
+
+  getTransactions = (params?: TxHistoryParams): Promise<TxsPage> => {
+    return this.bnb.getClient().getTransactions(params)
+  }
+
+  getTransactionData = (txHash: string): Promise<Tx> => {
+    return this.bnb.getClient().getTransactionData(txHash)
+  }
+
+  getFees = (): Promise<Fees> => {
+    return this.bnb.getClient().getFees()
   }
 
   /**

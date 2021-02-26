@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react'
 
 import { useHistory, useParams } from 'react-router'
 
+import { BNBChain } from '@xchainjs/xchain-util'
 import {
   ContentTitle,
   Helmet,
@@ -26,6 +27,8 @@ import {
 
 import { useMidgard } from 'redux/midgard/hooks'
 import { useWallet } from 'redux/wallet/hooks'
+
+import useNetworkFee from 'hooks/useNetworkFee'
 
 import { multichain } from 'services/multichain'
 
@@ -60,11 +63,15 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
     return assets
   }, [pools])
   const inputAssets = useMemo(() => {
-    const walletAssets = getWalletAssets(wallet)
+    if (wallet) {
+      const walletAssets = getWalletAssets(wallet)
 
-    return walletAssets.filter((asset: Asset) =>
-      poolAssets.find((poolAsset) => poolAsset.eq(asset)),
-    )
+      return walletAssets.filter((asset: Asset) =>
+        poolAssets.find((poolAsset) => poolAsset.eq(asset)),
+      )
+    }
+
+    return poolAssets.filter((poolAsset) => poolAsset.chain === BNBChain)
   }, [wallet, poolAssets])
 
   const [inputAmount, setInputAmount] = useState<Amount>(
@@ -73,6 +80,7 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
   const [percent, setPercent] = useState(0)
   const [recipient, setRecipient] = useState('')
   const [visibleConfirmModal, setVisibleConfirmModal] = useState(false)
+  const networkFee = useNetworkFee()
 
   const swap: Swap | null = useMemo(() => {
     if (poolLoading) return null
@@ -288,6 +296,7 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
         <Styled.SwapInfo>
           <Information title="Rate" description={rate} />
           <Information title="Slip" description={slipPercent.toFixed(2)} />
+          <Information title="Network Fee" description={networkFee} />
         </Styled.SwapInfo>
 
         <Styled.DragContainer>

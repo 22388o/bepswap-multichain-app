@@ -30,6 +30,8 @@ import {
 import { useMidgard } from 'redux/midgard/hooks'
 import { useWallet } from 'redux/wallet/hooks'
 
+import useNetworkFee from 'hooks/useNetworkFee'
+
 import { multichain } from 'services/multichain'
 
 import { getSendRoute } from 'settings/constants'
@@ -103,6 +105,7 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
     }
     return Amount.fromAssetAmount(0, 8)
   }, [sendAsset, wallet])
+  const networkFee = useNetworkFee()
 
   useEffect(() => {
     const fetchPoolAddress = async () => {
@@ -184,8 +187,6 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
 
     if (sendAsset) {
       const assetAmount = new AssetAmount(sendAsset, sendAmount)
-      console.log('recipient', recipient)
-      console.log('memo', memo)
       const txHash = await multichain.transfer({
         assetAmount,
         recipient,
@@ -241,8 +242,6 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
       </Styled.ConfirmModalContent>
     )
   }, [sendAsset, memo, recipientAddress])
-
-  if (!sendAsset || !outputAsset) return null
 
   return (
     <Styled.Container>
@@ -333,6 +332,10 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
             onChange={handleChangeMemo}
             placeholder="Memo"
           />
+        </Styled.FormItem>
+
+        <Styled.FormItem>
+          <Information title="Network Fee" description={networkFee} />
         </Styled.FormItem>
 
         <Styled.DragContainer>
