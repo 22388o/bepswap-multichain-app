@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 
 import { useHistory, useParams } from 'react-router'
+import { Link } from 'react-router-dom'
 
 import { SwapOutlined } from '@ant-design/icons'
 import { BNBChain } from '@xchainjs/xchain-util'
@@ -15,6 +16,7 @@ import {
   Information,
   Notification,
   IconButton,
+  Button,
 } from 'components'
 import {
   getWalletAssets,
@@ -34,7 +36,7 @@ import useNetworkFee from 'hooks/useNetworkFee'
 
 import { multichain } from 'services/multichain'
 
-import { getSwapRoute } from 'settings/constants'
+import { getSwapRoute, getPoolDetailRouteFromAsset } from 'settings/constants'
 
 import * as Styled from './Swap.style'
 import { Pair } from './types'
@@ -263,12 +265,23 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
     [inputAsset, outputAsset],
   )
 
+  const poolAsset = useMemo(
+    () => (inputAsset.isRUNE() ? outputAsset : inputAsset),
+    [inputAsset, outputAsset],
+  )
+
   return (
     <Styled.Container>
+      <Helmet title={title} content={title} />
+      <ContentTitle>
+        <Styled.HeaderContent>
+          <div>{title}</div>
+          <Link to={getPoolDetailRouteFromAsset(poolAsset)}>
+            <Button typevalue="outline">Pool</Button>
+          </Link>
+        </Styled.HeaderContent>
+      </ContentTitle>
       <Styled.ContentPanel>
-        <Helmet title={title} content={title} />
-        <ContentTitle>{title}</ContentTitle>
-
         <AssetInputCard
           title="send"
           asset={inputAsset}
@@ -296,7 +309,7 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
           inputProps={{ disabled: true }}
         />
         <Styled.FormItem>
-          <Styled.FormLabel>Recipient (Optional)</Styled.FormLabel>
+          <Styled.FormLabel>Recipient</Styled.FormLabel>
           <Input
             typevalue="ghost"
             sizevalue="big"

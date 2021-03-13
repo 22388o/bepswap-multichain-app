@@ -19,10 +19,10 @@ import { currencyIndexAssets } from 'settings/constants/currency'
 import { TimerFullIcon } from '../Icons'
 import { Logo } from '../Logo'
 import { NetworkStatus } from '../NetworkStatus'
-import { Popover } from '../Popover'
 import { Refresh } from '../Refresh'
 import { ThemeSwitch } from '../ThemeSwitch'
-import { Label } from '../UIElements'
+import { IconButton, Label } from '../UIElements'
+import { Tooltip } from '../UIElements/Tooltip'
 import { WalletDrawer } from '../WalletDrawer'
 import * as Styled from './Header.style'
 
@@ -71,7 +71,10 @@ export const Header = () => {
         <Link to={HOME_ROUTE}>
           <Logo type="bepswap" />
         </Link>
-        <NetworkStatus status={statusColor} />
+        <Styled.HeaderAction>
+          <NetworkStatus status={statusColor} />
+          <ThemeSwitch />
+        </Styled.HeaderAction>
       </Styled.HeaderLogo>
 
       <Styled.HeaderCenterWrapper>
@@ -88,12 +91,13 @@ export const Header = () => {
             onSelect={handleSelectCurrency}
           />
         </Styled.ToolWrapper>
-        <Popover tooltip="View Transaction">
-          <Styled.TxIcon onClick={handleClickTx}>
-            <TimerFullIcon />
-          </Styled.TxIcon>
-        </Popover>
-        <ThemeSwitch />
+        <Tooltip tooltip="View Transaction">
+          <IconButton onClick={handleClickTx}>
+            <Styled.TxIcon>
+              <TimerFullIcon />
+            </Styled.TxIcon>
+          </IconButton>
+        </Tooltip>
         <Styled.WalletBtn
           onClick={handleClickWalletBtn}
           connected={isConnected}

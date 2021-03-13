@@ -17,6 +17,10 @@ export const getPoolDetailRoute = (pool: Pool) => {
   return `${POOL_DETAIL_ROUTE}/${pool.asset.toString()}`
 }
 
+export const getPoolDetailRouteFromAsset = (asset: Asset) => {
+  return `${POOL_DETAIL_ROUTE}/${asset.toString()}`
+}
+
 export const SEND_ROUTE = '/send'
 
 export const getSendRoute = (asset: Asset) => {

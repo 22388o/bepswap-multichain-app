@@ -98,7 +98,11 @@ const Home = () => {
       {
         key: 'Pool',
         title: 'Pool',
-        render: (pool: Pool) => <AssetIcon asset={pool.asset} />,
+        render: (pool: Pool) => (
+          <Styled.ActionContainer>
+            <AssetIcon asset={pool.asset} />
+          </Styled.ActionContainer>
+        ),
         align: centerAlign,
       },
       {

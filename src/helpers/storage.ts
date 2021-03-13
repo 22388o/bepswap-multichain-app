@@ -23,7 +23,7 @@ export const saveTheme = (themeType: ThemeType) => {
 }
 
 export const getTheme = (): ThemeType => {
-  return (localStorage.getItem(THEME_TYPE) as ThemeType) || ThemeType.LIGHT
+  return (localStorage.getItem(THEME_TYPE) as ThemeType) || ThemeType.DARK
 }
 
 export const saveKeystore = (keystore: KeystoreType) => {

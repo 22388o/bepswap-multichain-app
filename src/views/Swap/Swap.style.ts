@@ -2,18 +2,34 @@ import { Label, ContentView } from 'components'
 import styled from 'styled-components/macro'
 import { palette } from 'styled-theme'
 
+import { media } from 'helpers/style'
+
 export const Container = styled(ContentView)`
   display: flex;
   flex-direction: column;
 
   align-items: center;
   justify-content: center;
+
+  background: ${palette('background', 0)};
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 0px;
+  padding-bottom: 10px;
+
+  border-radius: 14px;
+  border: 1px solid ${palette('gray', 0)};
 `
 
 export const ContentPanel = styled.div`
   display: flex;
   flex-direction: column;
-  width: 600px;
+
+  padding: 16px 8px;
+
+  ${media.sm`
+    padding: 16px 20px;
+  `}
 `
 
 export const ToolContainer = styled.div`
@@ -23,7 +39,7 @@ export const ToolContainer = styled.div`
 `
 
 export const SliderWrapper = styled.div`
-  width: 410px;
+  width: 260px;
 `
 
 export const SwitchPair = styled.div`
@@ -83,4 +99,19 @@ export const SwapInfo = styled.div`
   margin-top: 14px;
 
   border: 1px solid ${palette('gray', 0)};
+`
+
+export const HeaderContent = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+
+  padding: 0 20px;
+
+  .ant-btn {
+    border-radius: 8px;
+    min-width: 30px;
+  }
 `

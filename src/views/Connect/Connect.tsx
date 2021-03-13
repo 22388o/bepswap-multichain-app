@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react'
 import { useHistory } from 'react-router'
 
 import { KeyStore as KeystoreType } from '@binance-chain/javascript-sdk/lib/crypto'
-import { ContentView, Helmet, Tabs, TabPane } from 'components'
+import { Helmet, Tabs, TabPane } from 'components'
 
 import { useWallet } from 'redux/wallet/hooks'
 
@@ -38,7 +38,7 @@ const ConnectView = () => {
   )
 
   return (
-    <ContentView>
+    <Styled.ConnectContainer>
       <Helmet title="Connect Wallet" content="Connect Wallet" />
       <Styled.ConnectTabHeader>
         <Tabs activeKey={activeTab} onChange={handleChangeTab} action>
@@ -52,7 +52,7 @@ const ConnectView = () => {
           <KeystoreView onConnect={handleConnect} />
         )}
       </Styled.TabContent>
-    </ContentView>
+    </Styled.ConnectContainer>
   )
 }
 
