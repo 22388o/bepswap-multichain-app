@@ -1,8 +1,9 @@
-import { Label } from 'components'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from 'helpers/style'
+
+import { Label } from '../../UIElements'
 
 export const Container = styled.div`
   position: relative;

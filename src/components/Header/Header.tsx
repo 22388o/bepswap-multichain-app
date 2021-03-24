@@ -13,7 +13,7 @@ import { useWallet } from 'redux/wallet/hooks'
 
 import useNetwork from 'hooks/useNetwork'
 
-import { CONNECT_WALLET_ROUTE, HOME_ROUTE, TX_ROUTE } from 'settings/constants'
+import { HOME_ROUTE, TX_ROUTE } from 'settings/constants'
 import { currencyIndexAssets } from 'settings/constants/currency'
 
 import { TimerFullIcon } from '../Icons'
@@ -30,7 +30,7 @@ export const Header = () => {
   const history = useHistory()
 
   const { baseCurrencyAsset, setBaseCurrency } = useApp()
-  const { wallet } = useWallet()
+  const { wallet, setIsConnectModalOpen } = useWallet()
   const { refreshPage } = useGlobalState()
   const { isValidFundCaps, globalRunePooledStatus, statusColor } = useNetwork()
 
@@ -44,11 +44,11 @@ export const Header = () => {
 
   const handleClickWalletBtn = useCallback(() => {
     if (!isConnected) {
-      history.push(CONNECT_WALLET_ROUTE)
+      setIsConnectModalOpen(true)
     } else {
       setDrawerVisible(true)
     }
-  }, [history, isConnected])
+  }, [setIsConnectModalOpen, isConnected])
 
   const handleCloseDrawer = useCallback(() => {
     setDrawerVisible(false)

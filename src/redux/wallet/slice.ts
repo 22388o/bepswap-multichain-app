@@ -17,6 +17,7 @@ const initialState: State = {
   address: getAddress(),
   wallet: null,
   walletLoading: false,
+  isConnectModalOpen: false,
 }
 
 const slice = createSlice({
@@ -33,6 +34,9 @@ const slice = createSlice({
       state.address = address
       saveKeystore(keystore)
       saveAddress(address)
+    },
+    setIsConnectModalOpen(state, action: PayloadAction<boolean>) {
+      state.isConnectModalOpen = action.payload
     },
   },
   extraReducers: (builder) => {

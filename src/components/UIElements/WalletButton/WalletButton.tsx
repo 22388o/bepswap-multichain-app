@@ -14,9 +14,7 @@ export const WalletButton: React.FC<Props> = (props: Props): JSX.Element => {
   const getBtnValue = () => {
     if (!connected) {
       return (
-        <span style={{ display: 'flex', alignItems: 'center' }}>
-          Add Wallet
-        </span>
+        <span style={{ display: 'flex', alignItems: 'center' }}>Connect</span>
       )
     }
 

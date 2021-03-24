@@ -6,4 +6,5 @@ export interface State {
   wallet: Wallet | null
   address: string | null
   walletLoading: boolean
+  isConnectModalOpen: boolean
 }

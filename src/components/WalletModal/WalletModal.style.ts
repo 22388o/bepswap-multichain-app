@@ -1,8 +1,9 @@
-import { ContentView } from 'components'
 import styled from 'styled-components/macro'
 import { palette } from 'styled-theme'
 
-export const ConnectContainer = styled(ContentView)`
+import { Panel } from '../Panel'
+
+export const ConnectContainer = styled(Panel)`
   border: 1px solid ${palette('gray', 0)};
   border-radius: 14px;
   margin-left: auto;

@@ -10,10 +10,10 @@ import useTimeout from 'hooks/useTimeout'
 
 import { multichain } from 'services/multichain'
 
-import { Input } from '../../UIElements'
-import { StyledModal, ModalIcon, ModalData } from './ConfirmModal.style'
+import { Overlay, Input } from '../../UIElements'
+import * as Styled from './ConfirmModal.style'
 
-const MODAL_DISMISS_TIME = 15 * 1000 // 15s
+const MODAL_DISMISS_TIME = 25 * 1000 // 25s
 
 export type ConfirmModalProps = {
   visible: boolean
@@ -33,7 +33,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = (
   const [invalidPassword, setInvalidPassword] = useState(false)
   const [validating, setValidating] = useState(false)
 
-  // dismiss modal after 15s automatically
+  // dismiss modal after 25s
   useTimeout(() => {
     handleCancel()
   }, MODAL_DISMISS_TIME)
@@ -89,9 +89,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = (
 
   const renderModalContent = () => {
     const modalIcon = (
-      <ModalIcon>
+      <Styled.ModalIcon>
         <LockOutlined />
-      </ModalIcon>
+      </Styled.ModalIcon>
     )
 
     return (
@@ -108,29 +108,23 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = (
             value={password}
             onChange={onChangePasswordHandler}
             prefix={modalIcon}
-            autoComplete="off"
+            autoComplete="new-password"
           />
           {invalidPassword && (
             <div className="ant-form-explain">Password is wrong.</div>
           )}
         </Form.Item>
+        <Styled.Button>Confirm</Styled.Button>
       </Form>
     )
   }
 
   return (
-    <StyledModal
-      title="TRANSACTION CONFIRMATION"
-      visible={visible}
-      onOk={handleOK}
-      onCancel={handleCancel}
-      maskClosable={false}
-      closable={false}
-      okText="CONFIRM"
-      cancelText="CANCEL"
-    >
-      {children && <ModalData>{children}</ModalData>}
-      {renderModalContent()}
-    </StyledModal>
+    <Overlay isOpen={visible} onDismiss={handleCancel}>
+      <Styled.Content>
+        {children && <Styled.ModalData>{children}</Styled.ModalData>}
+        {renderModalContent()}
+      </Styled.Content>
+    </Overlay>
   )
 }

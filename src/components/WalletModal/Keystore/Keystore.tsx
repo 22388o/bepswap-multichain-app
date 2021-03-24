@@ -121,7 +121,7 @@ const KeystoreView = ({ onConnect }: Props) => {
               </Label>
               <Tooltip
                 title="This is the password used to decrypt your encrypted keystore file"
-                placement="bottomRight"
+                placement="topLeft"
               >
                 <QuestionCircleOutlined />
               </Tooltip>

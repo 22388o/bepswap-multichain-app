@@ -37,6 +37,7 @@ export const AppHolder = styled.div`
   h5,
   h6,
   a,
+  b,
   p,
   li,
   input,

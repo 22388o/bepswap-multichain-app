@@ -13,7 +13,7 @@ export interface TooltipProps extends Partial<Props> {
 }
 
 export const Tooltip = ({
-  placement = 'bottom',
+  placement = 'topLeft',
   tooltip,
   children,
 }: TooltipProps) => {
@@ -34,16 +34,16 @@ export const Tooltip = ({
   )
 }
 
-export interface TooltipIconProps extends Partial<TooltipProps> {
+export interface QuestionProps extends Partial<TooltipProps> {
   tooltip: React.ReactNode
   color?: string
 }
 
-export const TooltipIcon = ({
+export const Question = ({
   placement = 'bottom',
   tooltip,
   color = 'primary',
-}: TooltipIconProps) => {
+}: QuestionProps) => {
   return (
     <Tooltip tooltip={tooltip} placement={placement}>
       <InfoIcon color={color} />

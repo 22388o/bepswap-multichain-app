@@ -8,7 +8,7 @@ import {
   AssetInputCard,
   Slider,
   Input,
-  Drag,
+  FancyButton,
   ConfirmModal,
   Information,
   Notification,
@@ -54,12 +54,11 @@ const SendView = () => {
   }
 
   if (!wallet || !keystore) {
-    Notification({
-      type: 'error',
-      message: 'Wallet Not Found',
-      description: 'Please connect wallet',
-    })
-    return null
+    return (
+      <Styled.Container>
+        <Label>Please connect a wallet.</Label>
+      </Styled.Container>
+    )
   }
 
   return <Send sendAsset={sendAsset} wallet={wallet} />
@@ -69,7 +68,7 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
   const history = useHistory()
   const { pools } = useMidgard()
 
-  const asset = useMemo(() => sendAsset.toString(), [sendAsset])
+  const asset = useMemo(() => sendAsset.symbol, [sendAsset])
 
   const poolAssets = useMemo(() => {
     const assets = pools.map((pool) => pool.asset)
@@ -99,6 +98,16 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
   const [outputAsset, setOutputAsset] = useState<Asset>(sendAsset)
 
   const walletAssets = useMemo(() => getWalletAssets(wallet), [wallet])
+
+  // filter out non-pool assets from wallet in the expert mode
+  const sendAssets = useMemo(() => {
+    if (!isExpertMode) return walletAssets
+
+    return walletAssets.filter((walletAsset) =>
+      poolAssets.find((poolAsset) => poolAsset.eq(walletAsset)),
+    )
+  }, [isExpertMode, walletAssets, poolAssets])
+
   const assetBalance: Amount = useMemo(() => {
     if (wallet) {
       return getAssetBalance(sendAsset, wallet).amount
@@ -151,6 +160,10 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
     },
     [assetBalance],
   )
+
+  const handleSelectMax = useCallback(() => {
+    handleChangePercent(100)
+  }, [handleChangePercent])
 
   const handleChangeRecipient = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -215,7 +228,7 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
     setVisibleConfirmModal(false)
   }, [])
 
-  const handleDragSend = useCallback(() => {
+  const handleSend = useCallback(() => {
     setVisibleConfirmModal(true)
   }, [])
 
@@ -245,29 +258,28 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
 
   return (
     <Styled.Container>
+      <Helmet
+        title={`Send ${sendAsset.ticker}`}
+        content={`Send ${sendAsset.ticker}`}
+      />
+      <ContentTitle>Send {asset}</ContentTitle>
       <Styled.ContentPanel>
-        <Helmet
-          title={`Send ${sendAsset.ticker}`}
-          content={`Send ${sendAsset.ticker}`}
+        <AssetInputCard
+          title="send"
+          asset={sendAsset}
+          assets={sendAssets}
+          amount={sendAmount}
+          balance={assetBalance}
+          onChange={handleChangeSendAmount}
+          onSelect={handleSelectAsset}
+          onMax={handleSelectMax}
         />
-        <ContentTitle>Send {asset}</ContentTitle>
-
-        <Styled.CardContainer>
-          <AssetInputCard
-            title="input"
-            asset={sendAsset}
-            assets={walletAssets}
-            amount={sendAmount}
-            onChange={handleChangeSendAmount}
-            onSelect={handleSelectAsset}
-          />
-          <Slider value={percent} onChange={handleChangePercent} withLabel />
-        </Styled.CardContainer>
+        <Slider value={percent} onChange={handleChangePercent} withLabel />
 
         {isExpertMode && (
           <Styled.PoolSelect>
             <Label size="big" align="center">
-              Select Output Asset
+              Output Asset
             </Label>
             <AssetSelect
               asset={outputAsset}
@@ -338,13 +350,11 @@ const Send = ({ sendAsset, wallet }: { sendAsset: Asset; wallet: Wallet }) => {
           <Information title="Network Fee" description={networkFee} />
         </Styled.FormItem>
 
-        <Styled.DragContainer>
-          <Drag
-            title="Drag to send"
-            source={sendAsset}
-            onConfirm={handleDragSend}
-          />
-        </Styled.DragContainer>
+        <Styled.ConfirmButtonContainer>
+          <FancyButton onClick={handleSend} error={false}>
+            Send
+          </FancyButton>
+        </Styled.ConfirmButtonContainer>
       </Styled.ContentPanel>
       <ConfirmModal
         visible={visibleConfirmModal}

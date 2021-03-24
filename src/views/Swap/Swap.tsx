@@ -11,12 +11,13 @@ import {
   AssetInputCard,
   Slider,
   Input,
-  Drag,
   ConfirmModal,
   Information,
   Notification,
   IconButton,
   Button,
+  FancyButton,
+  SettingsOverlay,
 } from 'components'
 import {
   getWalletAssets,
@@ -27,8 +28,10 @@ import {
   getWalletAddressByChain,
   Swap,
   Percent,
+  Price,
 } from 'multichain-sdk'
 
+import { useApp } from 'redux/app/hooks'
 import { useMidgard } from 'redux/midgard/hooks'
 import { useWallet } from 'redux/wallet/hooks'
 
@@ -59,6 +62,7 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
   const history = useHistory()
   const { wallet } = useWallet()
   const { pools, poolLoading } = useMidgard()
+  const { slippageTolerance } = useApp()
 
   const poolAssets = useMemo(() => {
     const assets = pools.map((pool) => pool.asset)
@@ -91,13 +95,26 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
 
     try {
       const inputAssetAmount = new AssetAmount(inputAsset, inputAmount)
-      return new Swap(inputAsset, outputAsset, pools, inputAssetAmount)
+      return new Swap(
+        inputAsset,
+        outputAsset,
+        pools,
+        inputAssetAmount,
+        slippageTolerance,
+      )
     } catch (error) {
       console.log(error)
     }
 
     return null
-  }, [inputAsset, outputAsset, pools, inputAmount, poolLoading])
+  }, [
+    inputAsset,
+    outputAsset,
+    pools,
+    inputAmount,
+    slippageTolerance,
+    poolLoading,
+  ])
   const outputAmount: Amount = useMemo(() => {
     if (swap) {
       return swap.outputAmount.amount
@@ -105,22 +122,46 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
 
     return Amount.fromAssetAmount(0, 8)
   }, [swap])
-  const slipPercent: Percent = useMemo(() => {
-    if (swap) {
-      return swap.slip
-    }
 
-    return new Percent(0)
-  }, [swap])
-  const rate: string = useMemo(() => {
-    if (swap) {
-      return `1 ${swap.inputAsset.ticker} = ${swap.price.toFixedInverted(3)} ${
-        swap.outputAsset.ticker
-      }`
-    }
+  const slipPercent: Percent = useMemo(
+    () => (swap ? swap.slip : new Percent(0)),
+    [swap],
+  )
 
-    return ''
-  }, [swap])
+  const rate: string = useMemo(
+    () =>
+      swap
+        ? `1 ${swap.inputAsset.ticker} = ${swap.price.toFixedInverted(3)} ${
+            swap.outputAsset.ticker
+          }`
+        : '',
+    [swap],
+  )
+
+  const minReceive: Amount = useMemo(
+    () => (swap ? swap.minOutputAmount : Amount.fromAssetAmount(0, 8)),
+    [swap],
+  )
+
+  const inputAssetPriceInUSD = useMemo(
+    () =>
+      new Price({
+        baseAsset: inputAsset,
+        pools,
+        priceAmount: inputAmount,
+      }),
+    [inputAsset, inputAmount, pools],
+  )
+
+  const outputAssetPriceInUSD = useMemo(
+    () =>
+      new Price({
+        baseAsset: outputAsset,
+        pools,
+        priceAmount: outputAmount,
+      }),
+    [outputAsset, outputAmount, pools],
+  )
 
   useEffect(() => {
     if (wallet) {
@@ -129,7 +170,7 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
     }
   }, [wallet, outputAsset])
 
-  const assetBalance: Amount = useMemo(() => {
+  const inputAssetBalance: Amount = useMemo(() => {
     if (wallet) {
       return getAssetBalance(inputAsset, wallet).amount
     }
@@ -166,25 +207,31 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
 
   const handleChangeInputAmount = useCallback(
     (amount: Amount) => {
-      if (amount.gt(assetBalance)) {
-        setInputAmount(assetBalance)
+      if (amount.gt(inputAssetBalance)) {
+        setInputAmount(inputAssetBalance)
         setPercent(100)
       } else {
         setInputAmount(amount)
-        setPercent(amount.div(assetBalance).mul(100).assetAmount.toNumber())
+        setPercent(
+          amount.div(inputAssetBalance).mul(100).assetAmount.toNumber(),
+        )
       }
     },
-    [assetBalance],
+    [inputAssetBalance],
   )
 
   const handleChangePercent = useCallback(
     (p: number) => {
       setPercent(p)
-      const newAmount = assetBalance.mul(p).div(100)
+      const newAmount = inputAssetBalance.mul(p).div(100)
       setInputAmount(newAmount)
     },
-    [assetBalance],
+    [inputAssetBalance],
   )
+
+  const handleSelectMax = useCallback(() => {
+    handleChangePercent(100)
+  }, [handleChangePercent])
 
   const handleConfirm = useCallback(async () => {
     setVisibleConfirmModal(false)
@@ -213,7 +260,7 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
     setVisibleConfirmModal(false)
   }, [])
 
-  const handleDrag = useCallback(() => {
+  const handleSwap = useCallback(() => {
     if (wallet && swap) {
       if (swap.hasInSufficientFee) {
         Notification({
@@ -234,6 +281,9 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
     }
   }, [wallet, swap])
 
+  const isValidSwap = useMemo(() => swap?.isValid() ?? false, [swap])
+  const isValidSlip = useMemo(() => swap?.isSlipValid() ?? false, [swap])
+
   const renderConfirmModalContent = useMemo(() => {
     return (
       <Styled.ConfirmModalContent>
@@ -245,7 +295,15 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
           title="Receive"
           description={`${outputAmount.toFixed()} ${outputAsset.ticker.toUpperCase()}`}
         />
-        <Information title="Slip" description={slipPercent.toFixed(2)} />
+        <Information
+          title="Slip"
+          description={slipPercent.toFixed(2)}
+          error={isValidSlip}
+        />
+        <Information
+          title="Minimum Received"
+          description={minReceive.toFixed(2)}
+        />
         {!!recipient && (
           <Information title="Recipient" description={recipient} />
         )}
@@ -258,6 +316,8 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
     outputAsset,
     recipient,
     slipPercent,
+    isValidSlip,
+    minReceive,
   ])
 
   const title = useMemo(
@@ -276,9 +336,14 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
       <ContentTitle>
         <Styled.HeaderContent>
           <div>{title}</div>
-          <Link to={getPoolDetailRouteFromAsset(poolAsset)}>
-            <Button typevalue="outline">Pool</Button>
-          </Link>
+          <Styled.HeaderActions>
+            <Link to={getPoolDetailRouteFromAsset(poolAsset)}>
+              <Button typevalue="outline" fixedWidth={false} round>
+                Pool
+              </Button>
+            </Link>
+            <SettingsOverlay />
+          </Styled.HeaderActions>
         </Styled.HeaderContent>
       </ContentTitle>
       <Styled.ContentPanel>
@@ -287,8 +352,11 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
           asset={inputAsset}
           assets={inputAssets}
           amount={inputAmount}
+          balance={inputAssetBalance}
           onChange={handleChangeInputAmount}
           onSelect={handleSelectInputAsset}
+          onMax={handleSelectMax}
+          usdPrice={inputAssetPriceInUSD}
         />
         <Styled.ToolContainer>
           <Styled.SliderWrapper>
@@ -307,6 +375,7 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
           amount={outputAmount}
           onSelect={handleSelectOutputAsset}
           inputProps={{ disabled: true }}
+          usdPrice={outputAssetPriceInUSD}
         />
         <Styled.FormItem>
           <Styled.FormLabel>Recipient</Styled.FormLabel>
@@ -321,18 +390,23 @@ const SwapPage = ({ inputAsset, outputAsset }: Pair) => {
 
         <Styled.SwapInfo>
           <Information title="Rate" description={rate} />
-          <Information title="Slip" description={slipPercent.toFixed(2)} />
-          <Information title="Network Fee" description={networkFee} />
+          <Information
+            title="Slip"
+            description={slipPercent.toFixed(2)}
+            error={!isValidSlip}
+          />
+          <Information
+            title="Minimum Received"
+            description={minReceive.toFixed(2)}
+          />
+          <Information title="Fee" description={networkFee} />
         </Styled.SwapInfo>
 
-        <Styled.DragContainer>
-          <Drag
-            title="Drag to swap"
-            source={inputAsset}
-            target={outputAsset}
-            onConfirm={handleDrag}
-          />
-        </Styled.DragContainer>
+        <Styled.ConfirmButtonContainer>
+          <FancyButton onClick={handleSwap} error={!isValidSwap}>
+            Swap
+          </FancyButton>
+        </Styled.ConfirmButtonContainer>
       </Styled.ContentPanel>
 
       <ConfirmModal

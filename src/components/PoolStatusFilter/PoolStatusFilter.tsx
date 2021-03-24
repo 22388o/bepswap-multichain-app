@@ -5,7 +5,7 @@ import { CheckCircleOutlined, FieldTimeOutlined } from '@ant-design/icons'
 import { PoolStatus } from 'midgard-sdk'
 
 import { Button } from 'components/UIElements/Button'
-import { TooltipIcon } from 'components/UIElements/Tooltip'
+import { Question } from 'components/UIElements/Tooltip'
 
 import { PoolFilterWrapper } from './PoolStatusFilter.style'
 
@@ -48,7 +48,7 @@ export const PoolStatusFilter: React.FC<Props> = (
         <FieldTimeOutlined />
         Pending
       </Button>
-      <TooltipIcon
+      <Question
         tooltip="Pools don't immediately become enabled on THORChain and must participate
       in a liquidity competition to become enabled. Every 50k blocks (approx 3
       days), the pool with the most liquidity wins & becomes enabled. During

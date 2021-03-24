@@ -1,7 +1,6 @@
 import { Pool, Asset } from 'multichain-sdk'
 
 export const HOME_ROUTE = '/'
-export const CONNECT_WALLET_ROUTE = '/wallet/connect'
 
 export const TOOLS_ROUTE = '/tools'
 export const EXPLORERS_ROUTE = '/explorer'
